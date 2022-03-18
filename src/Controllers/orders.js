@@ -23,7 +23,7 @@ export async function postOrders(req, res) {
 }
 
 export async function getOrders(req, res) {
-    const { date } = req.query
+    const date = req.query.date
     try {
         if (!date) {
             const { rows: orders } = await connection.query({
@@ -77,7 +77,7 @@ export async function getOrders(req, res) {
                 })
             )
         } else {
-            const { rows: orders } = await connection.query({
+            const orders = await connection.query({
                 text: `
                 SELECT 
                 c.id AS "clientId", c.name AS "clientName", c.address AS "clientAddress", c.phone AS "clientPhone",
@@ -87,13 +87,13 @@ export async function getOrders(req, res) {
                 orders o
                 JOIN clients c ON c.id = o."clientId"
                 JOIN cakes ca ON ca.id = o."cakeId"
-                WHERE o."createAt" === ${date}`
+                WHERE o."createAt" = $1`
 
                 , rowMode: "array"
-            });
+            }, [date]);
             if (orders.rowCount === 0) return res.status(404).send([])
             res.send(
-                orders.map((row) => {
+                orders.rows.map((row) => {
                     const [
                         clientId,
                         clientName,
