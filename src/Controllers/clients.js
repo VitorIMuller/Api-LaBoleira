@@ -16,9 +16,9 @@ export async function postClients(req, res) {
 export async function getOrdersByClientId(req, res) {
     const { id } = req.params
     try {
-        const findClient = await connection.query(`SELECT id FROM clients WHERE id = $1`, [id])
+        const findClient = await connection.query(`SELECT id FROM clients WHERE id = $1`, [id]);
         if (findClient.rowCount === 0) return res.sendStatus(404)
-        const orders = await connection.query(` SELECT * FROM orders WHERE "clientId"=$1`, [id])
+        const orders = await connection.query(` SELECT * FROM orders WHERE "clientId"=$1`, [id]);
         res.send(orders.rows)
 
     } catch (error) {

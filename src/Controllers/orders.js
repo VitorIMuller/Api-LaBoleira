@@ -1,5 +1,7 @@
 import connection from "../database.js"
 import dayjs from "dayjs";
+
+
 export async function postOrders(req, res) {
     const { clientId, cakeId, quantity, totalPrice } = req.body
     const createAt = dayjs().format("YYYY-MM-DD");
@@ -31,11 +33,14 @@ export async function getOrders(req, res) {
                 SELECT 
                     c.id AS "clientId", c.name AS "clientName", c.address AS "clientAddress", c.phone AS "clientPhone",
                     ca.id AS "cakeId", ca.name AS "cakeName", ca.price AS "cakePrice", ca.description AS "cakeDescription", ca.image AS "cakeImage",
-                    o."createAt" AS createdAt, o.quantity AS "orderQuantity", o."totalPrice" AS "orderTotalPrice"
+                    o."createAt" AS createdAt, o.quantity AS "orderQuantity", o."totalPrice" AS "orderTotalPrice", o."isDelivered" AS "delivered",
+                    f.name AS flavourCake
                 FROM
                     orders o
                 JOIN clients c ON c.id = o."clientId"
-                JOIN cakes ca ON ca.id = o."cakeId"`
+                JOIN cakes ca ON ca.id = o."cakeId"
+                JOIN flavours f ON f.id = ca."flavourId"`
+
                 , rowMode: "array"
             });
             if (orders.rowCount === 0) return res.status(404).send([])
@@ -53,7 +58,10 @@ export async function getOrders(req, res) {
                         cakeImage,
                         createdAt,
                         orderQuantity,
-                        orderTotalPrice
+                        orderTotalPrice,
+                        delivered,
+                        flavourCake
+
                     ] = row
 
                     return {
@@ -68,11 +76,13 @@ export async function getOrders(req, res) {
                             name: cakeName,
                             price: cakePrice,
                             description: cakeDescription,
-                            image: cakeImage
+                            image: cakeImage,
+                            flavour: flavourCake,
                         },
                         createdAt: createdAt,
                         quantity: orderQuantity,
-                        totalPrice: orderTotalPrice
+                        totalPrice: orderTotalPrice,
+                        isDelivered: delivered
                     }
                 })
             )
@@ -82,11 +92,13 @@ export async function getOrders(req, res) {
                 SELECT 
                 c.id AS "clientId", c.name AS "clientName", c.address AS "clientAddress", c.phone AS "clientPhone",
                 ca.id AS "cakeId", ca.name AS "cakeName", ca.price AS "cakePrice", ca.description AS "cakeDescription", ca.image AS "cakeImage",
-                o."createAt" AS createdAt, o.quantity AS "orderQuantity", o."totalPrice" AS "orderTotalPrice"
+                o."createAt" AS createdAt, o.quantity AS "orderQuantity", o."totalPrice" AS "orderTotalPrice", o."isDelivered" AS delivered,
+                f.name AS flavourCake
                 FROM
                 orders o
                 JOIN clients c ON c.id = o."clientId"
                 JOIN cakes ca ON ca.id = o."cakeId"
+                JOIN flavours f ON f.id = ca."flavourId"
                 WHERE o."createAt" = $1`
 
                 , rowMode: "array"
@@ -106,7 +118,9 @@ export async function getOrders(req, res) {
                         cakeImage,
                         createdAt,
                         orderQuantity,
-                        orderTotalPrice
+                        orderTotalPrice,
+                        delivered,
+                        flavourId
                     ] = row
 
                     return {
@@ -121,11 +135,13 @@ export async function getOrders(req, res) {
                             name: cakeName,
                             price: cakePrice,
                             description: cakeDescription,
-                            image: cakeImage
+                            image: cakeImage,
+                            flavour: flavourId
                         },
                         createdAt: createdAt,
                         quantity: orderQuantity,
-                        totalPrice: orderTotalPrice
+                        totalPrice: orderTotalPrice,
+                        isDelivered: delivered
                     }
                 })
             )
@@ -202,4 +218,19 @@ export async function getOrderById(req, res) {
         res.sendStatus(500)
     }
 
+}
+
+export async function updateDelivery(req, res) {
+    const { id } = req.params
+
+    try {
+        if (id <= 0) return res.sendStatus(400)
+        const findId = await connection.query(`SELECT id FROM orders WHERE id=$1`, [id])
+        if (findId.rowCount === 0) return res.sendStatus(404);
+        await connection.query(`UPDATE orders SET "isDelivered" = $1 WHERE id=$2`, [true, id])
+        res.sendStatus(204)
+    } catch (error) {
+        console.log(error.message)
+        res.sendStatus(500)
+    }
 }
