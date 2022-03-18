@@ -5,11 +5,11 @@ import ordersRouter from "./ordersRouter.js";
 
 const router = Router();
 
-router.use(cakesRouter)
-router.use(clientsRouter)
-router.use(ordersRouter)
+router.use(cakesRouter);
+router.use(clientsRouter);
+router.use(ordersRouter);
 
 
 
 
-export default Router
+export default router;
