@@ -167,7 +167,7 @@ export async function getOrderById(req, res) {
                 SELECT 
                 c.id AS "clientId", c.name AS "clientName", c.address AS "clientAddress", c.phone AS "clientPhone",
                 ca.id AS "cakeId", ca.name AS "cakeName", ca.price AS "cakePrice", ca.description AS "cakeDescription", ca.image AS "cakeImage",
-                o."createAt" AS createdAt, o.quantity AS "orderQuantity", o."totalPrice" AS "orderTotalPrice"
+                o."createAt" AS createdAt, o.quantity AS "orderQuantity", o."totalPrice" AS "orderTotalPrice", o."isDelivered" AS delivered
                 FROM
                 orders o
                 JOIN clients c ON c.id = o."clientId"
@@ -190,7 +190,8 @@ export async function getOrderById(req, res) {
                     cakeImage,
                     createdAt,
                     orderQuantity,
-                    orderTotalPrice
+                    orderTotalPrice,
+                    delivered
                 ] = row
 
                 return {
@@ -209,7 +210,8 @@ export async function getOrderById(req, res) {
                     },
                     createdAt: createdAt,
                     quantity: orderQuantity,
-                    totalPrice: orderTotalPrice
+                    totalPrice: orderTotalPrice,
+                    isDelivered: delivered
                 }
             })
         )

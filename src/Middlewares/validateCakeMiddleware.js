@@ -9,7 +9,7 @@ export function validateCakeMIddleware(req, res, next) {
     if (validation.error) return res.status(400).send(validation.error)
 
 
-    if (name.length <= 2) return res.sendStatus(400);
+    if (name.length < 2) return res.sendStatus(400);
     if (price < 0) return res.sendStatus(400);
 
     next();
